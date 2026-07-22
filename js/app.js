@@ -137,8 +137,24 @@
       }
       var items = section.items || [];
       for (var j = 0; j < items.length; j++) {
-        if (items[j] && items[j].toLowerCase().indexOf(lower) !== -1) {
-          return true;
+        var item = items[j];
+      
+        // 기존 일반 문자열 항목
+        if (typeof item === "string") {
+          if (item.toLowerCase().indexOf(lower) !== -1) {
+            return true;
+          }
+          continue;
+        }
+      
+        // 링크 객체 항목
+        if (item && typeof item === "object") {
+          var itemText = item.text ? String(item.text).toLowerCase() : "";      
+          var itemUrl = item.url ? String(item.url).toLowerCase() : "";
+      
+          if (itemText.indexOf(lower) !== -1 || itemUrl.indexOf(lower) !== -1) {
+            return true;
+          }
         }
       }
     }
@@ -258,7 +274,7 @@
     }
 
     sections.forEach(function (section) {
-      html += '<div class="guide-section">';
+      html += '<section class="guide-detail-section">';
 
       if (section.heading) {
         html += '<h4 class="guide-section-heading">' + escapeHtml(section.heading) + "</h4>";
@@ -268,12 +284,40 @@
       if (items.length > 0) {
         html += '<ul class="guide-section-list">';
         items.forEach(function (item) {
-          html += "<li>" + escapeHtml(item) + "</li>";
+          // 기존 문자열 항목
+          if (typeof item === "string") {
+            html += "<li>" + escapeHtml(item) + "</li>";
+            return;
+          }
+        
+          // 링크 객체 항목
+          if (item && typeof item === "object") {
+            var linkText = item.text || item.url || "링크";
+        
+            if (isSafeUrl(item.url)) {
+              html +=
+                '<li class="guide-link-item">' +
+                  '<a class="guide-content-link"' +
+                    ' href="' + escapeHtml(item.url) + '"' +
+                    ' target="_blank"' +
+                    ' rel="noopener noreferrer">' +
+                    escapeHtml(linkText) +
+                    ' <span aria-hidden="true">↗</span>' +
+                  "</a>" +
+                "</li>";
+            } else {
+              // URL이 잘못되어도 화면 전체가 깨지지 않게 일반 텍스트로 표시
+              html +=
+                '<li class="guide-invalid-link">' +
+                  escapeHtml(linkText) +
+                "</li>";
+            }
+          }
         });
         html += "</ul>";
       }
 
-      html += "</div>";
+      html += "</section>";
     });
 
     return html;
@@ -548,6 +592,23 @@
   // ==============================
   // 유틸리티
   // ==============================
+
+  function isSafeUrl(url) {
+    if (typeof url !== "string") {
+      return false;
+    }
+  
+    try {
+      var parsedUrl = new URL(url);
+  
+      return (
+        parsedUrl.protocol === "https:" ||
+        parsedUrl.protocol === "http:"
+      );
+    } catch (error) {
+      return false;
+    }
+  }
 
   function escapeHtml(text) {
     var div = document.createElement("div");

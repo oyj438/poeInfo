@@ -695,3 +695,35 @@ body {
     grid-template-columns: repeat(5, 1fr);
   }
 }
+
+/* 공략 상세 내용 안의 외부 링크 */
+.guide-content-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  color: var(--accent);
+  font-weight: 600;
+  text-decoration: none;
+  text-underline-offset: 0.2em;
+  word-break: break-word;
+}
+
+.guide-content-link:hover {
+  color: #e6c34a;
+  text-decoration: underline;
+}
+
+.guide-content-link:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 3px;
+}
+
+.guide-link-item {
+  margin-top: 0.35rem;
+}
+
+.guide-invalid-link {
+  color: var(--text-muted);
+  text-decoration: line-through;
+}
