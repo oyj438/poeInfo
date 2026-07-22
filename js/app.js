@@ -292,7 +292,7 @@
         
           // 링크 객체 항목
           if (item && typeof item === "object") {
-            var linkText = item.text || item.url || "링크";
+            var linkText = item.text || item.url || "";
         
             if (isSafeUrl(item.url)) {
               html +=
@@ -301,12 +301,12 @@
                     ' href="' + escapeHtml(item.url) + '"' +
                     ' target="_blank"' +
                     ' rel="noopener noreferrer">' +
-                    escapeHtml(linkText) +
+                    escapeHtml(linkText || item.url) +
                     ' <span aria-hidden="true">↗</span>' +
                   "</a>" +
                 "</li>";
-            } else {
-              // URL이 잘못되어도 화면 전체가 깨지지 않게 일반 텍스트로 표시
+            } else if (linkText) {
+              // URL이 없거나 잘못된 경우에는 일반 텍스트로 표시
               html +=
                 '<li class="guide-invalid-link">' +
                   escapeHtml(linkText) +

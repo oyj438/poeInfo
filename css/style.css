@@ -722,8 +722,3 @@ body {
 .guide-link-item {
   margin-top: 0.35rem;
 }
-
-.guide-invalid-link {
-  color: var(--text-muted);
-  text-decoration: line-through;
-}

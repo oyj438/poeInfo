@@ -24,13 +24,19 @@ var GUIDE_DATA = [
       {
         heading: "액트 4~6",
         items: [
-          "저항력(특히 화염/번개)을 75%에 가깝게 맞추세요."
+          {
+            text: "저항력(특히 화염/번개)을 75%에 가깝게 맞추세요.",
+            url: ""
+          }
         ]
       },
       {
         heading: "액트 7~10",
         items: [
-          "보스전 전에 포탈 스크롤과 순간이동을 충분히 준비하세요."
+          {
+            text: "보스전 전에 포탈 스크롤과 순간이동을 충분히 준비하세요.",
+            url: ""
+          }
         ]
       },
       {
@@ -140,6 +146,11 @@ var EXTERNAL_LINKS = [
     url: "https://poe.ninja/"
   },
   {
+    name: "PoEDB",
+    description: "아이템 DB, 유니크 목록, league 정보 검색",
+    url: "https://poedb.tw/kr/"
+  },
+  {
     name: "PoE Wiki",
     description: "스킬, 아이템, 퀘스트 등 게임 정보 백과사전",
     url: "https://www.poewiki.net/"
@@ -160,8 +171,13 @@ var EXTERNAL_LINKS = [
     url: "https://craftofexile.com/"
   },
   {
-    name: "PoEDB",
-    description: "아이템 DB, 유니크 목록, league 정보 검색",
-    url: "https://poedb.tw/kr/"
+    name: "디시 PoE",
+    description: "디시인사이드 패스 오브 엑자일 갤러리",
+    url: "https://gall.dcinside.com/mgallery/board/lists/?id=pathofexile"
+  },
+  {
+    name: "엠피스 ASURA",
+    description: "엠피스 ASURA",
+    url: "https://asura.design/poe1"
   }
 ];
