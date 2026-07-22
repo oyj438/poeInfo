@@ -44,6 +44,8 @@
     actRecords: []        // { act, cumulativeMs, segmentMs }
   };
 
+  var timerPopupWindow = null;
+
   /**
    * 페이지 전체 초기화
    */
@@ -52,6 +54,7 @@
     initGuides();
     initTimer();
     initExternalLinks();
+    timerPopupInit();
 
     var params = new URLSearchParams(window.location.search);
 
@@ -59,7 +62,7 @@
       document.body.classList.add("timer-only");
       document.title = "PoE Act Timer";
   
-      switchSection("timer-section");
+      switchSection("timer");
     }
   }
 
@@ -346,23 +349,43 @@
     btnUndoAct.addEventListener("click", undoLastActRecord);
 
     updateTimerUI();
-    timerPopupInit();
     
   }
 
   function timerPopupInit() {
-
-    var openTimerPopupButton = document.getElementById("open-timer-popup");
-
-    if (openTimerPopupButton) {
-      openTimerPopupButton.addEventListener("click", function () {
-        window.open(
-          "./index.html?mode=timer",
-          "poeActTimer",
-          "width=560,height=760,resizable=yes,scrollbars=yes"
-        );
-      });
+    var openTimerPopupButton =
+      document.getElementById("open-timer-popup");
+  
+    if (!openTimerPopupButton) {
+      return;
     }
+  
+    openTimerPopupButton.addEventListener("click", function () {
+      if (
+        timerPopupWindow &&
+        !timerPopupWindow.closed
+      ) {
+        timerPopupWindow.focus();
+        return;
+      }
+
+      var timerUrl = new URL(
+        "index.html?mode=timer",
+        window.location.href
+      ).href;
+  
+      timerPopupWindow = window.open(
+        timerUrl,
+        "poeActTimer",
+        "width=560,height=760,resizable=yes,scrollbars=yes"
+      );
+  
+      if (!timerPopupWindow) {
+        alert(
+          "팝업이 차단되었습니다. 브라우저에서 이 사이트의 팝업을 허용해주세요."
+        );
+      }
+    });
   }
 
   function createActButtons() {
