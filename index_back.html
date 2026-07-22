@@ -3,11 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Path of Exile 액트런 타이머, 공략 정리, 액트 상점 필터, 외부 링크 모음">
+  <meta name="description" content="Path of Exile 액트런 타이머, 공략 정리, 외부 링크 모음">
   <title>PoE Run Helper</title>
   <!-- 상대 경로: GitHub Pages에서도 그대로 동작 -->
   <link rel="stylesheet" href="css/style.css">
-  <link rel="stylesheet" href="css/vendor-filter.css">
 </head>
 <body>
   <!-- 상단 헤더 -->
@@ -22,16 +21,19 @@
   <nav class="main-nav" aria-label="메인 메뉴">
     <ul class="nav-list">
       <li>
-        <button type="button" class="nav-btn is-active" data-section="guides">공략</button>
+        <button type="button" class="nav-btn is-active" data-section="guides">
+          공략
+        </button>
       </li>
       <li>
-        <button type="button" class="nav-btn" data-section="timer">액트런 타이머</button>
+        <button type="button" class="nav-btn" data-section="timer">
+          액트런 타이머
+        </button>
       </li>
       <li>
-        <button type="button" class="nav-btn" data-section="vendor-filter">액트 상점 필터</button>
-      </li>
-      <li>
-        <button type="button" class="nav-btn" data-section="links">외부 링크</button>
+        <button type="button" class="nav-btn" data-section="links">
+          외부 링크
+        </button>
       </li>
     </ul>
   </nav>
@@ -68,7 +70,13 @@
       <div class="section-header">
         <h2 id="timer-heading">액트런 타이머</h2>
         <p class="section-desc">액트 1~10 구간 시간을 기록합니다. 새로고침 시 기록이 초기화됩니다.</p>
-        <button type="button" id="open-timer-popup" class="timer-popup-button">타이머 새 창으로 열기</button>
+        <button
+          type="button"
+          id="open-timer-popup"
+          class="timer-popup-button"
+        >
+          타이머 새 창으로 열기
+        </button>
       </div>
 
       <!-- 타이머 상태 + 누적 시간 -->
@@ -90,7 +98,9 @@
       <div class="act-buttons">
         <h3>액트 완료 기록</h3>
         <div id="act-btn-group" class="act-btn-group"></div>
-        <button type="button" id="btn-undo-act" class="btn btn-secondary" disabled>마지막 액트 기록 취소</button>
+        <button type="button" id="btn-undo-act" class="btn btn-secondary" disabled>
+          마지막 액트 기록 취소
+        </button>
       </div>
 
       <!-- 액트 기록 테이블 -->
@@ -113,61 +123,7 @@
       </div>
     </section>
 
-    <section id="vendor-filter" class="content-section" aria-labelledby="vendor-filter-heading" hidden>
-      <div class="section-header">
-        <h2 id="vendor-filter-heading">액트 상점 필터</h2>
-        <p class="section-desc">액트 진행 중 상점 검색창에 붙여넣을 정규식을 만듭니다. 모든 조건은 “하나라도 만족”으로 연결됩니다.</p>
-      </div>
-
-      <div class="vendor-filter-layout">
-        <section class="vendor-card" aria-labelledby="vendor-presets-heading">
-          <h3 id="vendor-presets-heading">빠른 프리셋</h3>
-          <div class="vendor-preset-list">
-            <button type="button" class="btn vendor-preset" data-preset="three-link">3링크</button>
-            <button type="button" class="btn vendor-preset" data-preset="three-link-move">3링크 + 이동속도</button>
-            <button type="button" class="btn vendor-preset" data-preset="four-link-move">4링크 + 이동속도</button>
-            <button type="button" class="btn vendor-preset" data-preset="life-resistance">생명력 + 저항</button>
-          </div>
-        </section>
-
-        <section class="vendor-card" aria-labelledby="vendor-links-heading">
-          <h3 id="vendor-links-heading">링크 조건</h3>
-          <p class="vendor-help">3.29 기본 흰 소켓을 고려해 색상과 순서는 보지 않고, 연결 수만 검색합니다.</p>
-          <div class="vendor-radio-grid">
-            <label class="vendor-choice"><input type="radio" name="vendor-link-count" value="" checked> 조건 없음</label>
-            <label class="vendor-choice"><input type="radio" name="vendor-link-count" value=".-."> 2링크 이상</label>
-            <label class="vendor-choice"><input type="radio" name="vendor-link-count" value=".-.-."> 3링크 이상</label>
-            <label class="vendor-choice"><input type="radio" name="vendor-link-count" value=".-.-.-."> 4링크 이상</label>
-          </div>
-        </section>
-
-        <section class="vendor-card" aria-labelledby="vendor-options-heading">
-          <h3 id="vendor-options-heading">추가 옵션</h3>
-          <div id="vendor-option-list" class="vendor-option-grid"></div>
-        </section>
-
-        <section class="vendor-card" aria-labelledby="vendor-keywords-heading">
-          <h3 id="vendor-keywords-heading">직접 키워드</h3>
-          <label for="vendor-keywords" class="vendor-label">쉼표로 여러 개 입력</label>
-          <input type="text" id="vendor-keywords" class="vendor-input" placeholder="예: 화강암, 석영, 마나" autocomplete="off">
-          <p class="vendor-help">직접 입력한 값은 정규식 문법이 아닌 일반 문자로 처리합니다.</p>
-        </section>
-
-        <section class="vendor-card vendor-result-card" aria-labelledby="vendor-result-heading">
-          <div class="vendor-result-header">
-            <h3 id="vendor-result-heading">생성된 정규식</h3>
-            <span id="vendor-regex-length" class="vendor-regex-length">0자</span>
-          </div>
-          <textarea id="vendor-regex-result" class="vendor-result" rows="4" readonly spellcheck="false" aria-label="생성된 상점 검색 정규식"></textarea>
-          <div class="vendor-result-actions">
-            <button type="button" id="vendor-copy" class="btn btn-primary" disabled>복사하기</button>
-            <button type="button" id="vendor-reset" class="btn">초기화</button>
-            <span id="vendor-copy-message" class="vendor-copy-message" aria-live="polite"></span>
-          </div>
-        </section>
-      </div>
-    </section>
-
+    <!-- ===== 외부 링크 섹션 ===== -->
     <section id="links" class="content-section" aria-labelledby="links-heading" hidden>
       <div class="section-header">
         <h2 id="links-heading">외부 공략 링크</h2>
@@ -184,6 +140,5 @@
   <!-- 데이터 파일을 먼저, 앱 로직을 나중에 불러옴 -->
   <script src="js/data.js"></script>
   <script src="js/app.js"></script>
-  <script src="js/vendor-filter.js"></script>
 </body>
 </html>
