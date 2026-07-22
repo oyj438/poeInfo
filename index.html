@@ -5,12 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="Path of Exile 액트런 타이머, 공략 정리, 액트 상점 필터, 외부 링크 모음">
   <title>PoE Run Helper</title>
-  <!-- 상대 경로: GitHub Pages에서도 그대로 동작 -->
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="css/vendor-filter.css">
+  <link rel="stylesheet" href="css/act-maps.css">
 </head>
 <body>
-  <!-- 상단 헤더 -->
   <header class="site-header">
     <div class="header-inner">
       <h1 class="site-title">PoE Run Helper</h1>
@@ -18,7 +17,6 @@
     </div>
   </header>
 
-  <!-- 메인 네비게이션 (탭 전환) -->
   <nav class="main-nav" aria-label="메인 메뉴">
     <ul class="nav-list">
       <li>
@@ -37,14 +35,13 @@
   </nav>
 
   <main class="main-content">
-    <!-- ===== 공략 섹션 ===== -->
     <section id="guides" class="content-section is-active" aria-labelledby="guides-heading">
       <div class="section-header">
         <h2 id="guides-heading">공략 목록</h2>
         <p class="section-desc">카테고리와 검색으로 원하는 공략을 찾아보세요.</p>
+        <button type="button" id="open-act-map" class="btn btn-primary act-map-open-button">액트 지도 보기</button>
       </div>
 
-      <!-- 필터 & 검색 -->
       <div class="guide-controls">
         <div class="control-group">
           <label for="category-filter">카테고리</label>
@@ -58,42 +55,36 @@
         </div>
       </div>
 
-      <!-- 공략 목록 (JavaScript로 채움) -->
       <ul id="guide-list" class="guide-list" aria-live="polite"></ul>
       <p id="guide-empty" class="empty-message" hidden>검색 결과가 없습니다.</p>
     </section>
 
-    <!-- ===== 액트런 타이머 섹션 ===== -->
     <section id="timer" class="content-section" aria-labelledby="timer-heading" hidden>
       <div class="section-header">
         <h2 id="timer-heading">액트런 타이머</h2>
         <p class="section-desc">액트 1~10 구간 시간을 기록합니다. 새로고침 시 기록이 초기화됩니다.</p>
-        <button type="button" id="open-timer-popup" class="timer-popup-button">타이머 새 창으로 열기</button>
       </div>
 
-      <!-- 타이머 상태 + 누적 시간 -->
       <div class="timer-panel" id="timer-panel">
         <p class="timer-status" id="timer-status" aria-live="polite">대기</p>
         <div class="timer-display" id="timer-display" aria-live="polite">00:00:00.0</div>
         <p class="timer-recent" id="timer-recent" aria-live="polite"></p>
       </div>
 
-      <!-- 타이머 제어 버튼 -->
       <div class="timer-controls">
         <button type="button" id="btn-start" class="btn btn-primary">시작</button>
         <button type="button" id="btn-pause" class="btn" disabled>일시정지</button>
         <button type="button" id="btn-resume" class="btn" disabled>재개</button>
         <button type="button" id="btn-reset" class="btn btn-danger">초기화</button>
+        <button type="button" id="open-timer-popup" class="btn btn-primary timer-popup-button">타이머 새 창으로 열기</button>
       </div>
 
-      <!-- 액트 완료 버튼 (1~10) -->
       <div class="act-buttons">
         <h3>액트 완료 기록</h3>
         <div id="act-btn-group" class="act-btn-group"></div>
         <button type="button" id="btn-undo-act" class="btn btn-secondary" disabled>마지막 액트 기록 취소</button>
       </div>
 
-      <!-- 액트 기록 테이블 -->
       <div class="act-records-wrap">
         <h3>기록</h3>
         <table class="act-table" aria-label="액트 구간 기록">
@@ -177,13 +168,45 @@
     </section>
   </main>
 
+
+  <div id="act-map-modal" class="act-map-modal" hidden>
+    <div class="act-map-backdrop" data-act-map-close></div>
+    <section class="act-map-dialog" role="dialog" aria-modal="true" aria-labelledby="act-map-title">
+      <div class="act-map-header">
+        <div>
+          <p class="act-map-kicker">캠페인 지역 연결도</p>
+          <h2 id="act-map-title">1장 지역 지도</h2>
+        </div>
+        <button type="button" id="close-act-map" class="act-map-close" aria-label="액트 지도 닫기">×</button>
+      </div>
+
+      <div id="act-map-tabs" class="act-map-tabs" role="tablist" aria-label="액트 선택"></div>
+
+      <div class="act-map-toolbar" aria-label="지도 확대 도구">
+        <button type="button" id="act-map-prev" class="btn">이전 장</button>
+        <div class="act-map-zoom-controls">
+          <button type="button" id="act-map-zoom-out" class="btn" aria-label="지도 축소">−</button>
+          <button type="button" id="act-map-fit" class="btn">화면 맞춤</button>
+          <button type="button" id="act-map-zoom-in" class="btn" aria-label="지도 확대">＋</button>
+          <span id="act-map-zoom-label" class="act-map-zoom-label" aria-live="polite">100%</span>
+        </div>
+        <button type="button" id="act-map-next" class="btn">다음 장</button>
+      </div>
+
+      <div id="act-map-viewport" class="act-map-viewport">
+        <img id="act-map-image" class="act-map-image" src="assets/maps/act-1.png" alt="1장 지역 지도" draggable="false">
+      </div>
+      <p class="act-map-help">확대한 뒤 마우스로 드래그해 이동할 수 있습니다. ESC를 누르면 닫힙니다.</p>
+    </section>
+  </div>
+
   <footer class="site-footer">
     <p>Path of Exile는 Grinding Gear Games의 등록상표입니다. 비공식 팬 사이트입니다.</p>
   </footer>
 
-  <!-- 데이터 파일을 먼저, 앱 로직을 나중에 불러옴 -->
   <script src="js/data.js"></script>
   <script src="js/app.js"></script>
   <script src="js/vendor-filter.js"></script>
+  <script src="js/act-maps.js"></script>
 </body>
 </html>

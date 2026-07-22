@@ -1,0 +1,198 @@
+/* 액트 지도 모달 */
+.act-map-open-button {
+  margin-top: 0.75rem;
+}
+
+.act-map-modal[hidden] {
+  display: none;
+}
+
+.act-map-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+}
+
+.act-map-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.82);
+  backdrop-filter: blur(4px);
+}
+
+.act-map-dialog {
+  position: relative;
+  z-index: 1;
+  width: min(1180px, 96vw);
+  max-height: 94vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid rgba(213, 155, 69, 0.55);
+  border-radius: 16px;
+  background: #15130f;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.65);
+}
+
+.act-map-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.25rem 0.75rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.act-map-header h2 {
+  margin: 0;
+}
+
+.act-map-kicker {
+  margin: 0 0 0.25rem;
+  color: var(--text-muted, #aaa39a);
+  font-size: 0.82rem;
+}
+
+.act-map-close {
+  width: 42px;
+  height: 42px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.05);
+  color: inherit;
+  font-size: 1.8rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.act-map-close:hover {
+  background: rgba(255, 255, 255, 0.11);
+}
+
+.act-map-tabs {
+  display: flex;
+  gap: 0.45rem;
+  padding: 0.75rem 1rem;
+  overflow-x: auto;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.act-map-tab {
+  flex: 0 0 auto;
+  min-width: 56px;
+  min-height: 40px;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  border-radius: 9px;
+  background: rgba(255, 255, 255, 0.04);
+  color: inherit;
+  cursor: pointer;
+}
+
+.act-map-tab:hover,
+.act-map-tab.is-active {
+  border-color: var(--accent, #d59b45);
+  background: rgba(213, 155, 69, 0.16);
+}
+
+.act-map-toolbar {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+}
+
+.act-map-zoom-controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.act-map-zoom-label {
+  min-width: 52px;
+  text-align: center;
+  color: var(--text-muted, #aaa39a);
+  font-variant-numeric: tabular-nums;
+}
+
+.act-map-viewport {
+  position: relative;
+  min-height: 320px;
+  height: min(68vh, 760px);
+  margin: 0 1rem;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  background:
+    linear-gradient(45deg, rgba(255,255,255,0.025) 25%, transparent 25%),
+    linear-gradient(-45deg, rgba(255,255,255,0.025) 25%, transparent 25%),
+    #0e0d0b;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+
+.act-map-viewport.is-dragging {
+  cursor: grabbing;
+}
+
+.act-map-image {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  max-width: none;
+  transform-origin: center center;
+  will-change: transform;
+  user-select: none;
+  pointer-events: none;
+}
+
+.act-map-help {
+  margin: 0;
+  padding: 0.65rem 1rem 0.9rem;
+  color: var(--text-muted, #aaa39a);
+  font-size: 0.84rem;
+  text-align: center;
+}
+
+body.act-map-open {
+  overflow: hidden;
+}
+
+@media (max-width: 720px) {
+  .act-map-modal {
+    padding: 0;
+  }
+
+  .act-map-dialog {
+    width: 100vw;
+    max-height: 100vh;
+    height: 100vh;
+    border-radius: 0;
+  }
+
+  .act-map-toolbar {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .act-map-zoom-controls {
+    grid-column: 1 / -1;
+    grid-row: 1;
+  }
+
+  #act-map-prev,
+  #act-map-next {
+    width: 100%;
+  }
+
+  .act-map-viewport {
+    height: auto;
+    flex: 1 1 auto;
+    min-height: 0;
+  }
+}
