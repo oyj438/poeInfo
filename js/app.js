@@ -198,24 +198,20 @@
     toggleBtn.setAttribute("aria-controls", "guide-detail-" + guide.id);
     toggleBtn.textContent = isExpanded ? "내용 닫기" : "내용 보기";
 
-    toggleBtn.addEventListener("click", function () {
-      toggleGuideDetail(guide.id, li, toggleBtn);
-    });
+    var detailWrap = document.createElement("div");
+    detailWrap.className = "guide-detail";
+    detailWrap.id = "guide-detail-" + guide.id;
+    detailWrap.setAttribute("role", "region");
+    detailWrap.setAttribute("aria-label", (guide.title || "") + " 상세 내용");
+    detailWrap.hidden = !isExpanded;
 
-    toggleBtn.addEventListener("keydown", function (e) {
-      if (e.key === "Enter" || e.key === " ") {
-        e.preventDefault();
-        toggleGuideDetail(guide.id, li, toggleBtn);
-      }
+    toggleBtn.addEventListener("click", function () {
+      toggleGuideDetail(guide.id, li, toggleBtn, detailWrap);
     });
 
     cardBody.appendChild(top);
     cardBody.appendChild(summary);
     cardBody.appendChild(toggleBtn);
-
-    var detailWrap = document.createElement("div");
-    detailWrap.className = "guide-detail";
-    detailWrap.id = "guide-detail-" + guide.id;
 
     var detailInner = document.createElement("div");
     detailInner.className = "guide-detail-inner";
@@ -233,15 +229,17 @@
     return li;
   }
 
-  function toggleGuideDetail(guideId, listItem, toggleBtn) {
+  function toggleGuideDetail(guideId, listItem, toggleBtn, detailWrap) {
     var willExpand = !listItem.classList.contains("is-expanded");
 
     if (willExpand) {
       expandedGuideIds[guideId] = true;
+      detailWrap.hidden = false;
       listItem.classList.add("is-expanded");
     } else {
       delete expandedGuideIds[guideId];
       listItem.classList.remove("is-expanded");
+      detailWrap.hidden = true;
     }
 
     toggleBtn.setAttribute("aria-expanded", willExpand ? "true" : "false");
