@@ -726,3 +726,24 @@ body {
 .guide-link-item {
   margin-top: 0.35rem;
 }
+
+body.timer-only .site-header,
+body.timer-only #guide-section,
+body.timer-only #links-section,
+body.timer-only .main-nav {
+  display: none;
+}
+
+body.timer-only main {
+  max-width: 100%;
+  padding: 1rem;
+}
+
+body.timer-only #timer-section {
+  display: block;
+  margin: 0;
+}
+
+body.timer-only .timer-popup-button {
+  display: none;
+}

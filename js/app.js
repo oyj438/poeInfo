@@ -52,6 +52,15 @@
     initGuides();
     initTimer();
     initExternalLinks();
+
+    var params = new URLSearchParams(window.location.search);
+
+    if (params.get("mode") === "timer") {
+      document.body.classList.add("timer-only");
+      document.title = "PoE Act Timer";
+  
+      switchSection("timer-section");
+    }
   }
 
   // ==============================
@@ -337,6 +346,23 @@
     btnUndoAct.addEventListener("click", undoLastActRecord);
 
     updateTimerUI();
+    timerPopupInit();
+    
+  }
+
+  function timerPopupInit() {
+
+    var openTimerPopupButton = document.getElementById("open-timer-popup");
+
+    if (openTimerPopupButton) {
+      openTimerPopupButton.addEventListener("click", function () {
+        window.open(
+          "./index.html?mode=timer",
+          "poeActTimer",
+          "width=560,height=760,resizable=yes,scrollbars=yes"
+        );
+      });
+    }
   }
 
   function createActButtons() {
