@@ -318,7 +318,6 @@
       }
 
       html += "</section>";
-      html += "</br>";
     });
 
     return html;
