@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Path of Exile 공략 정리, 액트런 타이머, 외부 링크 모음">
-  <title>PoE Info - Path of Exile 공략</title>
+  <meta name="description" content="Path of Exile 액트런 타이머, 공략 정리, 외부 링크 모음">
+  <title>PoE Run Helper</title>
   <!-- 상대 경로: GitHub Pages에서도 그대로 동작 -->
   <link rel="stylesheet" href="css/style.css">
 </head>
@@ -12,8 +12,8 @@
   <!-- 상단 헤더 -->
   <header class="site-header">
     <div class="header-inner">
-      <h1 class="site-title">PoE Info</h1>
-      <p class="site-subtitle">Path of Exile 공략 &amp; 도구</p>
+      <h1 class="site-title">PoE Run Helper</h1>
+      <p class="site-subtitle">액트런 · 빌드 · 게임 정보 메모</p>
     </div>
   </header>
 
@@ -55,8 +55,8 @@
           </select>
         </div>
         <div class="control-group">
-          <label for="guide-search">제목 검색</label>
-          <input type="search" id="guide-search" placeholder="공략 제목 입력...">
+          <label for="guide-search">검색</label>
+          <input type="search" id="guide-search" placeholder="공략 검색" autocomplete="off">
         </div>
       </div>
 
@@ -72,8 +72,12 @@
         <p class="section-desc">액트 1~10 구간 시간을 기록합니다. 새로고침 시 기록이 초기화됩니다.</p>
       </div>
 
-      <!-- 현재 누적 시간 표시 -->
-      <div class="timer-display" id="timer-display" aria-live="polite">00:00:00</div>
+      <!-- 타이머 상태 + 누적 시간 -->
+      <div class="timer-panel" id="timer-panel">
+        <p class="timer-status" id="timer-status" aria-live="polite">대기</p>
+        <div class="timer-display" id="timer-display" aria-live="polite">00:00:00.0</div>
+        <p class="timer-recent" id="timer-recent" aria-live="polite"></p>
+      </div>
 
       <!-- 타이머 제어 버튼 -->
       <div class="timer-controls">
@@ -98,14 +102,14 @@
         <table class="act-table" aria-label="액트 구간 기록">
           <thead>
             <tr>
-              <th>액트</th>
-              <th>누적 시간</th>
-              <th>구간 시간</th>
+              <th scope="col">액트</th>
+              <th scope="col">누적 시간</th>
+              <th scope="col">구간 시간</th>
             </tr>
           </thead>
           <tbody id="act-records-body">
             <tr class="empty-row">
-              <td colspan="3">아직 기록이 없습니다.</td>
+              <td colspan="3">아직 기록이 없습니다. 타이머를 시작한 뒤 액트 완료 버튼을 눌러보세요.</td>
             </tr>
           </tbody>
         </table>
@@ -121,19 +125,6 @@
       <div id="external-links" class="link-cards"></div>
     </section>
   </main>
-
-  <!-- 공략 상세 모달 -->
-  <div id="guide-modal" class="modal" hidden aria-hidden="true">
-    <div class="modal-backdrop" data-close-modal></div>
-    <div class="modal-dialog" role="dialog" aria-modal="true" aria-labelledby="modal-title">
-      <header class="modal-header">
-        <span id="modal-category" class="modal-category"></span>
-        <h3 id="modal-title"></h3>
-        <button type="button" class="modal-close" data-close-modal aria-label="닫기">&times;</button>
-      </header>
-      <div id="modal-body" class="modal-body"></div>
-    </div>
-  </div>
 
   <footer class="site-footer">
     <p>Path of Exile는 Grinding Gear Games의 등록상표입니다. 비공식 팬 사이트입니다.</p>

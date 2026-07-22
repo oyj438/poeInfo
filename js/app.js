@@ -1,5 +1,5 @@
 /**
- * app.js - PoE Info 메인 로직
+ * app.js - PoE Run Helper 메인 로직
  *
  * 페이지 로드 시 init()이 실행되어
  * 탭 전환, 공략 목록, 타이머, 외부 링크 기능을 초기화합니다.
@@ -15,14 +15,13 @@
   var guideSearch = document.getElementById("guide-search");
   var guideList = document.getElementById("guide-list");
   var guideEmpty = document.getElementById("guide-empty");
-  var guideModal = document.getElementById("guide-modal");
-  var modalTitle = document.getElementById("modal-title");
-  var modalCategory = document.getElementById("modal-category");
-  var modalBody = document.getElementById("modal-body");
   var externalLinksContainer = document.getElementById("external-links");
 
   // 타이머 관련 DOM
+  var timerPanel = document.getElementById("timer-panel");
+  var timerStatus = document.getElementById("timer-status");
   var timerDisplay = document.getElementById("timer-display");
+  var timerRecent = document.getElementById("timer-recent");
   var btnStart = document.getElementById("btn-start");
   var btnPause = document.getElementById("btn-pause");
   var btnResume = document.getElementById("btn-resume");
@@ -30,6 +29,9 @@
   var actBtnGroup = document.getElementById("act-btn-group");
   var btnUndoAct = document.getElementById("btn-undo-act");
   var actRecordsBody = document.getElementById("act-records-body");
+
+  // 펼친 공략 id 저장 (목록 다시 그릴 때 상태 유지)
+  var expandedGuideIds = {};
 
   // ===== 타이머 상태 =====
   // Date.now() 기준으로 계산해 탭 비활성화에도 시간 오차를 줄임
@@ -59,15 +61,11 @@
   function initNavigation() {
     navButtons.forEach(function (btn) {
       btn.addEventListener("click", function () {
-        var sectionId = btn.getAttribute("data-section");
-        switchSection(sectionId);
+        switchSection(btn.getAttribute("data-section"));
       });
     });
   }
 
-  /**
-   * 선택한 섹션만 보이게 하고 메뉴 활성 표시를 갱신
-   */
   function switchSection(sectionId) {
     sections.forEach(function (section) {
       var isTarget = section.id === sectionId;
@@ -76,8 +74,7 @@
     });
 
     navButtons.forEach(function (btn) {
-      var isActive = btn.getAttribute("data-section") === sectionId;
-      btn.classList.toggle("is-active", isActive);
+      btn.classList.toggle("is-active", btn.getAttribute("data-section") === sectionId);
     });
   }
 
@@ -91,25 +88,11 @@
 
     categoryFilter.addEventListener("change", renderGuideList);
     guideSearch.addEventListener("input", renderGuideList);
-
-    // 모달 닫기 (X 버튼, 배경 클릭)
-    document.querySelectorAll("[data-close-modal]").forEach(function (el) {
-      el.addEventListener("click", closeGuideModal);
-    });
-
-    // ESC 키로 모달 닫기
-    document.addEventListener("keydown", function (e) {
-      if (e.key === "Escape" && !guideModal.hidden) {
-        closeGuideModal();
-      }
-    });
   }
 
-  /**
-   * 공략 데이터에서 카테고리 목록을 추출해 select에 채움
-   */
   function populateCategoryFilter() {
     var categories = [];
+
     GUIDE_DATA.forEach(function (guide) {
       if (categories.indexOf(guide.category) === -1) {
         categories.push(guide.category);
@@ -126,8 +109,43 @@
   }
 
   /**
-   * 필터·검색 조건에 맞는 공략만 목록에 표시
+   * 공략이 검색어와 일치하는지 확인
+   * title, category, summary, sections heading/items 모두 검색
    */
+  function guideMatchesSearch(guide, searchText) {
+    if (!searchText) {
+      return true;
+    }
+
+    var lower = searchText.toLowerCase();
+
+    if (guide.title && guide.title.toLowerCase().indexOf(lower) !== -1) {
+      return true;
+    }
+    if (guide.category && guide.category.toLowerCase().indexOf(lower) !== -1) {
+      return true;
+    }
+    if (guide.summary && guide.summary.toLowerCase().indexOf(lower) !== -1) {
+      return true;
+    }
+
+    var sections = guide.sections || [];
+    for (var i = 0; i < sections.length; i++) {
+      var section = sections[i];
+      if (section.heading && section.heading.toLowerCase().indexOf(lower) !== -1) {
+        return true;
+      }
+      var items = section.items || [];
+      for (var j = 0; j < items.length; j++) {
+        if (items[j] && items[j].toLowerCase().indexOf(lower) !== -1) {
+          return true;
+        }
+      }
+    }
+
+    return false;
+  }
+
   function renderGuideList() {
     var selectedCategory = categoryFilter.value;
     var searchText = guideSearch.value.trim().toLowerCase();
@@ -135,10 +153,7 @@
     var filtered = GUIDE_DATA.filter(function (guide) {
       var matchCategory =
         selectedCategory === "all" || guide.category === selectedCategory;
-      var matchSearch =
-        searchText === "" ||
-        guide.title.toLowerCase().indexOf(searchText) !== -1;
-      return matchCategory && matchSearch;
+      return matchCategory && guideMatchesSearch(guide, searchText);
     });
 
     guideList.innerHTML = "";
@@ -151,49 +166,119 @@
     guideEmpty.hidden = true;
 
     filtered.forEach(function (guide) {
-      var li = document.createElement("li");
-      li.className = "guide-item";
-
-      var button = document.createElement("button");
-      button.type = "button";
-      button.className = "guide-item-btn";
-      button.setAttribute("aria-label", guide.title + " 상세 보기");
-
-      button.innerHTML =
-        '<div class="guide-item-header">' +
-        '<span class="guide-category">' + escapeHtml(guide.category) + "</span>" +
-        '<h3 class="guide-title">' + escapeHtml(guide.title) + "</h3>" +
-        "</div>" +
-        '<p class="guide-summary">' + escapeHtml(guide.summary) + "</p>";
-
-      button.addEventListener("click", function () {
-        openGuideModal(guide);
-      });
-
-      li.appendChild(button);
-      guideList.appendChild(li);
+      guideList.appendChild(createGuideItem(guide));
     });
   }
 
   /**
-   * 공략 상세 모달 열기
+   * 공략 카드 DOM 생성 (펼치기/접기)
    */
-  function openGuideModal(guide) {
-    modalCategory.textContent = guide.category;
-    modalTitle.textContent = guide.title;
-    modalBody.textContent = guide.content;
-    guideModal.hidden = false;
-    guideModal.setAttribute("aria-hidden", "false");
-    document.body.style.overflow = "hidden";
+  function createGuideItem(guide) {
+    var isExpanded = !!expandedGuideIds[guide.id];
+    var li = document.createElement("li");
+    li.className = "guide-item" + (isExpanded ? " is-expanded" : "");
+
+    var cardBody = document.createElement("div");
+    cardBody.className = "guide-card-body";
+
+    var top = document.createElement("div");
+    top.className = "guide-card-top";
+    top.innerHTML =
+      '<span class="guide-category">' + escapeHtml(guide.category || "") + "</span>" +
+      '<h3 class="guide-title">' + escapeHtml(guide.title || "") + "</h3>";
+
+    var summary = document.createElement("p");
+    summary.className = "guide-summary";
+    summary.textContent = guide.summary || "";
+
+    var toggleBtn = document.createElement("button");
+    toggleBtn.type = "button";
+    toggleBtn.className = "guide-toggle";
+    toggleBtn.setAttribute("aria-expanded", isExpanded ? "true" : "false");
+    toggleBtn.setAttribute("aria-controls", "guide-detail-" + guide.id);
+    toggleBtn.textContent = isExpanded ? "내용 닫기" : "내용 보기";
+
+    toggleBtn.addEventListener("click", function () {
+      toggleGuideDetail(guide.id, li, toggleBtn);
+    });
+
+    toggleBtn.addEventListener("keydown", function (e) {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        toggleGuideDetail(guide.id, li, toggleBtn);
+      }
+    });
+
+    cardBody.appendChild(top);
+    cardBody.appendChild(summary);
+    cardBody.appendChild(toggleBtn);
+
+    var detailWrap = document.createElement("div");
+    detailWrap.className = "guide-detail";
+    detailWrap.id = "guide-detail-" + guide.id;
+
+    var detailInner = document.createElement("div");
+    detailInner.className = "guide-detail-inner";
+
+    var detailContent = document.createElement("div");
+    detailContent.className = "guide-detail-content";
+    detailContent.innerHTML = buildGuideDetailHtml(guide);
+
+    detailInner.appendChild(detailContent);
+    detailWrap.appendChild(detailInner);
+
+    li.appendChild(cardBody);
+    li.appendChild(detailWrap);
+
+    return li;
+  }
+
+  function toggleGuideDetail(guideId, listItem, toggleBtn) {
+    var willExpand = !listItem.classList.contains("is-expanded");
+
+    if (willExpand) {
+      expandedGuideIds[guideId] = true;
+      listItem.classList.add("is-expanded");
+    } else {
+      delete expandedGuideIds[guideId];
+      listItem.classList.remove("is-expanded");
+    }
+
+    toggleBtn.setAttribute("aria-expanded", willExpand ? "true" : "false");
+    toggleBtn.textContent = willExpand ? "내용 닫기" : "내용 보기";
   }
 
   /**
-   * 공략 상세 모달 닫기
+   * sections 배열을 HTML로 변환 (items 없어도 오류 없음)
    */
-  function closeGuideModal() {
-    guideModal.hidden = true;
-    guideModal.setAttribute("aria-hidden", "true");
-    document.body.style.overflow = "";
+  function buildGuideDetailHtml(guide) {
+    var html = "";
+    var sections = guide.sections || [];
+
+    if (sections.length === 0) {
+      return '<p class="guide-section-empty">등록된 상세 내용이 없습니다.</p>';
+    }
+
+    sections.forEach(function (section) {
+      html += '<div class="guide-section">';
+
+      if (section.heading) {
+        html += '<h4 class="guide-section-heading">' + escapeHtml(section.heading) + "</h4>";
+      }
+
+      var items = section.items || [];
+      if (items.length > 0) {
+        html += '<ul class="guide-section-list">';
+        items.forEach(function (item) {
+          html += "<li>" + escapeHtml(item) + "</li>";
+        });
+        html += "</ul>";
+      }
+
+      html += "</div>";
+    });
+
+    return html;
   }
 
   // ==============================
@@ -208,11 +293,10 @@
     btnResume.addEventListener("click", resumeTimer);
     btnReset.addEventListener("click", resetTimer);
     btnUndoAct.addEventListener("click", undoLastActRecord);
+
+    updateTimerUI();
   }
 
-  /**
-   * 액트 1~10 완료 버튼 생성
-   */
   function createActButtons() {
     actBtnGroup.innerHTML = "";
 
@@ -221,7 +305,7 @@
         var btn = document.createElement("button");
         btn.type = "button";
         btn.className = "btn act-btn";
-        btn.textContent = "Act " + actNum;
+        btn.textContent = "액트 " + actNum + " 완료";
         btn.setAttribute("data-act", actNum);
         btn.disabled = true;
 
@@ -234,9 +318,6 @@
     }
   }
 
-  /**
-   * 현재까지 경과 시간(ms) 계산
-   */
   function getElapsedMs() {
     if (timerState.status === "idle") {
       return 0;
@@ -246,22 +327,20 @@
       return timerState.pauseStartedAt - timerState.startTime - timerState.pausedTotal;
     }
 
-    // running
     return Date.now() - timerState.startTime - timerState.pausedTotal;
   }
 
   /**
-   * ms를 HH:MM:SS 문자열로 변환
+   * ms를 HH:MM:SS.d 형식으로 변환 (0.1초 단위)
    */
   function formatTime(ms) {
-    var totalSeconds = Math.floor(ms / 1000);
-    var hours = Math.floor(totalSeconds / 3600);
-    var minutes = Math.floor((totalSeconds % 3600) / 60);
-    var seconds = totalSeconds % 60;
+    var totalTenths = Math.floor(ms / 100);
+    var hours = Math.floor(totalTenths / 36000);
+    var minutes = Math.floor((totalTenths % 36000) / 600);
+    var seconds = Math.floor((totalTenths % 600) / 10);
+    var tenths = totalTenths % 10;
 
-    return (
-      pad(hours) + ":" + pad(minutes) + ":" + pad(seconds)
-    );
+    return pad(hours) + ":" + pad(minutes) + ":" + pad(seconds) + "." + tenths;
   }
 
   function pad(num) {
@@ -269,38 +348,82 @@
   }
 
   /**
-   * 화면의 타이머 숫자 갱신
+   * setInterval 중복 방지: 기존 interval을 먼저 정리
    */
+  function clearDisplayInterval() {
+    if (timerState.displayInterval !== null) {
+      clearInterval(timerState.displayInterval);
+      timerState.displayInterval = null;
+    }
+  }
+
+  function startDisplayInterval() {
+    clearDisplayInterval();
+    // 0.1초 단위 표시를 위해 100ms마다 갱신 (실제 시간은 Date.now()로 계산)
+    timerState.displayInterval = setInterval(updateTimerDisplay, 100);
+  }
+
   function updateTimerDisplay() {
     timerDisplay.textContent = formatTime(getElapsedMs());
   }
 
-  /**
-   * 타이머 버튼 활성/비활성 상태 갱신
-   */
+  function updateTimerStatusUI() {
+    timerPanel.classList.remove("is-running", "is-paused");
+
+    if (timerState.status === "running") {
+      timerStatus.textContent = "실행 중";
+      timerPanel.classList.add("is-running");
+    } else if (timerState.status === "paused") {
+      timerStatus.textContent = "일시정지";
+      timerPanel.classList.add("is-paused");
+    } else {
+      timerStatus.textContent = "대기";
+    }
+  }
+
+  function updateRecentActUI() {
+    var last = timerState.actRecords[timerState.actRecords.length - 1];
+
+    if (!last) {
+      timerRecent.textContent = "";
+      return;
+    }
+
+    timerRecent.textContent =
+      "최근 기록: 액트 " + last.act +
+      " · 누적 " + formatTime(last.cumulativeMs) +
+      " · 구간 " + formatTime(last.segmentMs);
+  }
+
   function updateTimerButtons() {
     var status = timerState.status;
+    var actEnabled = status === "running" || status === "paused";
 
     btnStart.disabled = status !== "idle";
     btnPause.disabled = status !== "running";
     btnResume.disabled = status !== "paused";
     btnReset.disabled = status === "idle" && timerState.actRecords.length === 0;
 
-    // 액트 버튼: 타이머가 돌아가거나 일시정지 중일 때만 사용 가능
-    var actEnabled = status === "running" || status === "paused";
-    var actButtons = actBtnGroup.querySelectorAll(".act-btn");
-    var recordedActs = timerState.actRecords.map(function (r) {
-      return r.act;
+    // 순서 강제 없음: 타이머 실행 중이면 모든 액트 버튼 사용 가능
+    var recordedActs = {};
+    timerState.actRecords.forEach(function (record) {
+      recordedActs[record.act] = true;
     });
 
-    actButtons.forEach(function (btn) {
+    actBtnGroup.querySelectorAll(".act-btn").forEach(function (btn) {
       var actNum = parseInt(btn.getAttribute("data-act"), 10);
-      var alreadyRecorded = recordedActs.indexOf(actNum) !== -1;
-      btn.disabled = !actEnabled || alreadyRecorded;
-      btn.classList.toggle("is-done", alreadyRecorded);
+      btn.disabled = !actEnabled;
+      btn.classList.toggle("is-recorded", !!recordedActs[actNum]);
     });
 
     btnUndoAct.disabled = timerState.actRecords.length === 0;
+  }
+
+  function updateTimerUI() {
+    updateTimerDisplay();
+    updateTimerStatusUI();
+    updateRecentActUI();
+    updateTimerButtons();
   }
 
   function startTimer() {
@@ -309,55 +432,44 @@
     timerState.pausedTotal = 0;
     timerState.pauseStartedAt = 0;
 
-    // 1초마다 화면 갱신 (실제 시간은 Date.now()로 계산)
-    timerState.displayInterval = setInterval(updateTimerDisplay, 1000);
-    updateTimerDisplay();
-    updateTimerButtons();
+    startDisplayInterval();
+    updateTimerUI();
   }
 
   function pauseTimer() {
     timerState.status = "paused";
     timerState.pauseStartedAt = Date.now();
-    clearInterval(timerState.displayInterval);
-    timerState.displayInterval = null;
-    updateTimerDisplay();
-    updateTimerButtons();
+    clearDisplayInterval();
+    updateTimerUI();
   }
 
   function resumeTimer() {
-    // 이번 일시정지 구간만큼 pausedTotal에 더함
     timerState.pausedTotal += Date.now() - timerState.pauseStartedAt;
     timerState.status = "running";
     timerState.pauseStartedAt = 0;
 
-    timerState.displayInterval = setInterval(updateTimerDisplay, 1000);
-    updateTimerDisplay();
-    updateTimerButtons();
+    startDisplayInterval();
+    updateTimerUI();
   }
 
   function resetTimer() {
-    clearInterval(timerState.displayInterval);
+    clearDisplayInterval();
     timerState.status = "idle";
     timerState.startTime = 0;
     timerState.pausedTotal = 0;
     timerState.pauseStartedAt = 0;
-    timerState.displayInterval = null;
     timerState.actRecords = [];
 
-    timerDisplay.textContent = "00:00:00";
+    timerDisplay.textContent = "00:00:00.0";
     renderActRecords();
-    updateTimerButtons();
+    updateTimerUI();
   }
 
-  /**
-   * 액트 완료 기록
-   */
   function recordAct(actNum) {
     var cumulativeMs = getElapsedMs();
     var segmentMs;
 
     if (timerState.actRecords.length === 0) {
-      // 첫 액트: 구간 = 시작부터 현재까지
       segmentMs = cumulativeMs;
     } else {
       var prev = timerState.actRecords[timerState.actRecords.length - 1];
@@ -371,41 +483,43 @@
     });
 
     renderActRecords();
-    updateTimerButtons();
+    updateTimerUI();
   }
 
-  /**
-   * 마지막 액트 기록 취소
-   */
   function undoLastActRecord() {
     if (timerState.actRecords.length === 0) {
       return;
     }
     timerState.actRecords.pop();
     renderActRecords();
-    updateTimerButtons();
+    updateTimerUI();
   }
 
-  /**
-   * 액트 기록 테이블 갱신
-   */
   function renderActRecords() {
     actRecordsBody.innerHTML = "";
 
     if (timerState.actRecords.length === 0) {
       var emptyRow = document.createElement("tr");
       emptyRow.className = "empty-row";
-      emptyRow.innerHTML = '<td colspan="3">아직 기록이 없습니다.</td>';
+      emptyRow.innerHTML =
+        '<td colspan="3">아직 기록이 없습니다. 타이머를 시작한 뒤 액트 완료 버튼을 눌러보세요.</td>';
       actRecordsBody.appendChild(emptyRow);
       return;
     }
 
-    timerState.actRecords.forEach(function (record) {
+    timerState.actRecords.forEach(function (record, index) {
       var row = document.createElement("tr");
+      var isLatest = index === timerState.actRecords.length - 1;
+
+      if (isLatest) {
+        row.className = "is-latest";
+      }
+
       row.innerHTML =
-        "<td>Act " + record.act + "</td>" +
+        "<td>액트 " + record.act + "</td>" +
         "<td>" + formatTime(record.cumulativeMs) + "</td>" +
         "<td>" + formatTime(record.segmentMs) + "</td>";
+
       actRecordsBody.appendChild(row);
     });
   }
@@ -427,7 +541,7 @@
       anchor.innerHTML =
         '<h3 class="link-card-name">' + escapeHtml(link.name) + "</h3>" +
         '<p class="link-card-desc">' + escapeHtml(link.description) + "</p>" +
-        '<span class="link-card-url">' + escapeHtml(link.url) + "</span>";
+        '<span class="link-card-action">바로가기 ↗</span>';
 
       externalLinksContainer.appendChild(anchor);
     });
@@ -437,16 +551,12 @@
   // 유틸리티
   // ==============================
 
-  /**
-   * HTML 특수문자 이스케이프 (XSS 방지)
-   */
   function escapeHtml(text) {
     var div = document.createElement("div");
-    div.textContent = text;
+    div.textContent = text == null ? "" : String(text);
     return div.innerHTML;
   }
 
-  // DOM 준비 완료 후 실행
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", init);
   } else {
