@@ -17,6 +17,12 @@
   var summary = document.getElementById("act-guide-summary");
   var steps = document.getElementById("act-guide-steps");
 
+  var modeLabel = document.getElementById("act-guide-mode-label");
+  var title = document.getElementById("act-guide-title");
+  var summary = document.getElementById("act-guide-summary");
+  var steps = document.getElementById("act-guide-steps");
+  var mapButton = section.querySelector("[data-open-act-map]");
+
   var state = {
     mode: "normal",
     act: 1
@@ -60,11 +66,23 @@
     if (!guide) {
       title.textContent = state.act + "장 준비 중";
       summary.textContent = "이 액트의 가이드 내용은 아직 작성 중입니다.";
+
+      if (mapButton) {
+        mapButton.setAttribute("data-open-act-map", String(state.act));
+        mapButton.textContent = state.act + "장 지도 보기";
+      }
+      
       return;
     }
 
     title.textContent = guide.title;
     summary.textContent = guide.summary || "";
+
+    if (mapButton) {
+      mapButton.setAttribute("data-open-act-map", String(state.act));
+      mapButton.textContent = state.act + "장 지도 보기";
+      mapButton.setAttribute("aria-label", state.act + "장 지역 지도 보기");
+    }
 
     guide.steps.forEach(function (step, index) {
       var item = document.createElement("li");
