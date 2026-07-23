@@ -141,12 +141,12 @@
     resetSelectionsOnly();
 
     if (presetName === "three-link") {
-      selectLinkPattern(".-.-.");
+      selectLinkPattern("[rgbw]-[rgbw]-[rgbw]");
     } else if (presetName === "three-link-move") {
-      selectLinkPattern(".-.-.");
+      selectLinkPattern("[rgbw]-[rgbw]-[rgbw]");
       selectOption("movement-speed");
     } else if (presetName === "four-link-move") {
-      selectLinkPattern(".-.-.-.");
+      selectLinkPattern("[rgbw]-[rgbw]-[rgbw]-[rgbw]");
       selectOption("movement-speed");
     } else if (presetName === "life-resistance") {
       selectOption("maximum-life");
