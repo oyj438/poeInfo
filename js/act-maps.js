@@ -17,10 +17,10 @@
     });
   }
 
-  var openButton = document.getElementById("open-act-map");
+  var openButtons = document.querySelectorAll("#open-act-map, [data-open-act-map]");
   var modal = document.getElementById("act-map-modal");
 
-  if (!openButton || !modal) {
+  if (openButtons.length === 0 || !modal) {
     return;
   }
 
@@ -65,11 +65,11 @@
     });
   }
 
-  function openModal() {
+  function openModal(act) {
     state.lastFocused = document.activeElement;
     modal.hidden = false;
     document.body.classList.add("act-map-open");
-    selectAct(state.act);
+    selectAct(act || state.act);
     closeButton.focus();
   }
 
@@ -181,7 +181,12 @@
 
   createTabs();
 
-  openButton.addEventListener("click", openModal);
+  Array.prototype.forEach.call(openButtons, function (button) {
+    button.addEventListener("click", function () {
+      var requestedAct = Number(button.getAttribute("data-open-act-map"));
+      openModal(requestedAct || state.act);
+    });
+  });
   closeButton.addEventListener("click", closeModal);
   modal.querySelector("[data-act-map-close]").addEventListener("click", closeModal);
 
